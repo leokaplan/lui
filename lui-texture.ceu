@@ -1,0 +1,303 @@
+#ifndef _LUI_TEXTURE_CEU
+#define _LUI_TEXTURE_CEU
+#include "ui-texture.ceu"
+#include "lui.ceu"
+#include "c.ceu"
+
+class LUITexture with
+    //interface UI;
+    var   _SDL_Renderer[] ren       = null;
+    var char* varname;
+    function (_SDL_Rect* r)=>void go;
+    //function (_SDL_Rect* bg, bool redim??)=>void go_bg;
+do
+    
+    var _SDL_Texture[] tex;
+    
+    //LUI_getstring(type,types,_G[@varname].type,nil)
+/*            var int types =  [[strlen(_G[@varname].type)]];
+            var char[10] otype;
+            var char* type = otype;
+            finalize 
+                 type = _malloc(types); 
+            with
+                //finalize 
+                    _free(type); 
+                //with
+                //    nothing;
+                //end
+            end 
+*/
+    var char[10] tipo;
+    tipo = [[ _G[@varname].tipo or "nil"]]; 
+    _printf("%s\n",tipo);
+    
+    if not _strcmp(tipo,"text") then
+        _TTF_Init();
+        finalize 
+        with
+            _TTF_Quit();
+        end
+
+        var _TTF_Font[] font;
+        var int fontsize =  [[ _G[@varname].font_size or 20 ]];
+        //LUI_getstring(fontpath,_G[@varname].font, "Deutsch.ttf" ) 
+        var char[100] fontpath;
+        fontpath = [[ _G[@varname].font or "Deutsch.ttf" ]];
+        _printf("%s %d\n",fontpath,fontsize);
+        finalize
+            font = _TTF_OpenFont( fontpath ,fontsize);
+            //font = _TTF_OpenFont( "Deutsch.ttf" ,20);
+        with
+            _TTF_CloseFont(font);
+        end
+        _assert(font != null);
+
+        var char[10] fg_clr = [[ _G[@varname].fg_clr or "black"  ]];
+        var char[10] bg_clr = [[ _G[@varname].bg_clr or "white"  ]];
+        var char[200] text = [[ _G[@varname].text or "texto"  ]];
+        
+        var _SDL_Color fg;
+        var _SDL_Color bg;
+        fg = _colors.black;
+        bg = _colors.white;
+        /*finalize 
+            fg = _LUI_Color(fg_clr);
+        with
+            nothing;
+        end
+        finalize 
+            bg = _LUI_Color(bg_clr);
+        with
+            nothing;
+        end
+        /*
+        native do
+            SDL_Color fg = LUI_Color(fg_clr);
+            SDL_Color bg = LUI_Color(bg_clr);
+        end
+        */
+        finalize
+           tex = _SDL_text2texture(ren,font,text,&fg,&bg);
+        with
+            _SDL_DestroyTexture(tex);
+        end
+    end
+
+    if not _strcmp(tipo,"img") then
+        //LUI_getstring(path,_G[@varname].src,nil)
+        var char[100] path = [[ _G[@varname].src or ""]];
+
+        finalize
+            tex = _IMG_LoadTexture(ren,path);
+        with
+            _SDL_DestroyTexture(tex);
+        end
+    end
+
+
+    var char[10] alignH = [[_G[@varname].horizontal_align or "left" ]];
+    var char[10] alignV = [[_G[@varname].vertical_align or "top" ]];
+   /* 
+    var int aH;
+    finalize 
+        aH = _LUI_Halign(alignH);
+    with nothing; 
+    end
+    var int aV;
+    finalize 
+        aV = _LUI_Valign(alignV);
+    with nothing; 
+    end
+    */
+    var UITexture ui with
+        this.ren = ren;
+        this.tex = tex;
+        this.align_x = _UI_ALIGN_LEFT;
+        //this.align_x = aH;
+        this.align_y = _UI_ALIGN_TOP;
+        //this.align_y = aV;
+    end;
+    function (_SDL_Rect* r)=>void go do
+        ui.go(r);
+    end
+end
+
+#ifdef __LUI_TEXTURE_CEU
+
+#include "c.ceu"
+#include "sdl-colors.ceu"
+
+LUI_load("lui-texture.lua");
+input void SDL_QUIT;
+
+var int win_w;
+var int win_h;
+var _SDL_Window[] win;
+    finalize
+        win = _SDL_CreateWindow("UI - Texture",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+_SDL_GetWindowSize(win, &win_w, &win_h);
+var _SDL_Rect win_r;
+    win_r.x = 0;
+    win_r.y = 0;
+    win_r.w = win_w;
+    win_r.h = win_h;
+
+var _SDL_Renderer[] ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+
+var _SDL_Rect r1, r2;
+
+par/or do
+    await SDL_QUIT;
+with
+    every SDL_REDRAW do
+        _SDL_SetRenderDrawColor(ren, 0x00,0x00,0x00, 0xFF);
+        _SDL_RenderFillRect(ren, &win_r);
+        _SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF, 0xFF);
+        _SDL_RenderFillRect(ren, &r2);
+        _circleRGBA(ren, win_r.w/2, win_r.h/2, 2, 0xFF,0xFF,0xFF,0xFF);
+    end
+with
+    var LUITexture ui_txt with
+        this.ren = ren;
+        this.varname = "txt";
+    end;
+
+    var _SDL_Rect r_txt;
+        r_txt.x = 0;
+        r_txt.y = 0;
+    ui_txt.go(&r_txt);
+
+// */
+/*
+    ui_txt.align_bg_x = _UI_ALIGN_RIGHT;
+    ui_txt.align_bg_y = _UI_ALIGN_BOTTOM;
+    ui_txt.go_bg(&win_r, false);
+*/
+    var LUITexture ui1 with
+        this.ren = ren;
+        this.varname = "img1";
+    end;
+
+    var LUITexture ui2 with
+        this.ren = ren;
+        this.varname = "img2";
+    end;
+    await FOREVER;
+// */
+/*
+    par do
+        r1.x = 10;
+        r1.y = 10;
+        r1.w = 150;
+        r1.h = 150;
+
+        r2.x = 200;
+        r2.y = 100;
+        r2.w = 100;
+        r2.h = 100;
+
+        loop do
+            native _rand();
+            loop i in 500 do
+                r1.x = r1.x + 1;
+                r1.w = r1.w + _rand() % 3 - 1;
+                if r1.w < 5 then r1.w = 5; end
+                r1.h = r1.h + _rand() % 3 - 1;
+                if r1.h < 5 then r1.h = 5; end
+                ui1.go_bg(&r1, false);
+                await 10ms;
+            end
+
+            loop i in 300 do
+                r1.y = r1.y + 1;
+                r1.w = r1.w + _rand() % 3 - 1;
+                if r1.w < 5 then r1.w = 5; end
+                r1.h = r1.h + _rand() % 3 - 1;
+                if r1.h < 5 then r1.h = 5; end
+                ui1.go_bg(&r1, false);
+                await 10ms;
+            end
+
+            loop i in 500 do
+                r1.x = r1.x - 1;
+                r1.w = r1.w + _rand() % 3 - 1;
+                if r1.w < 5 then r1.w = 5; end
+                r1.h = r1.h + _rand() % 3 - 1;
+                if r1.h < 5 then r1.h = 5; end
+                ui1.go_bg(&r1, false);
+                await 10ms;
+            end
+
+            loop i in 300 do
+                r1.y = r1.y - 1;
+                r1.w = r1.w + _rand() % 3 - 1;
+                if r1.w < 5 then r1.w = 5; end
+                r1.h = r1.h + _rand() % 3 - 1;
+                if r1.h < 5 then r1.h = 5; end
+                ui1.go_bg(&r1, false);
+                await 10ms;
+            end
+        end
+    with
+        loop do
+            ui2.align_x = _UI_ALIGN_CENTER;
+            ui2.align_y = _UI_ALIGN_MIDDLE;
+            loop i in 3 do
+                loop j in 3 do
+                    ui1.align_bg_x = i;
+                    ui1.align_bg_y = j;
+                    ui1.go_bg(&r1, false);
+
+                    ui2.align_bg_x = i;
+                    ui2.align_bg_y = j;
+                    ui2.go_bg(&r2, false);
+
+                    await 1s;
+                end
+            end
+
+            var _SDL_Rect r;
+                r.x = win_r.w / 2;
+                r.y = win_r.h / 2;
+
+            loop i in 3 do
+                loop j in 3 do
+                    ui2.align_x = i;
+                    ui2.align_y = j;
+                    ui2.go(&r);
+                    await 1s;
+                end
+            end
+        end
+    with
+        every ui1.ok_clicked do
+            _printf("clicked 1\n");
+        end
+    with
+        every ui2.ok_clicked do
+            _printf("clicked 2\n");
+        end
+    end
+*/
+with
+    every SDL_REDRAW do
+        _SDL_RenderPresent(ren);
+    end
+end
+
+escape 0;
+
+#endif
+#endif

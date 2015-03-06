@@ -1,0 +1,38 @@
+//#ifndef __LUI_GRID
+//#define __LUI_GRID
+#include "ui-grid.ceu"
+
+class LUIGrid with
+    var char* varname;
+    var int[] lay = null;
+    var int lay_lins,lay_cols;
+    pool UIGridItem[] uis;
+    var int uis_n = 0;
+    event int ok_uiclicked;
+    var int spc_x=0, spc_y=0;
+    var int pad_x=0, pad_y=0;
+//    interface UI;
+do        
+    var UIGrid grid with
+        //this.clr_bg; 
+        var int x   = [[a]];//[[ _G[@varname].clr_bg or &_colors.white ]];
+       // this.clr_fr       = [[_G[@varname].clr_fr or &_colors.black]];
+       // this.clr_cell_bg  = [[_G[@varname].clr_cell_bg or &_colors.white]];
+       // this.clr_cell_fr  = [[_G[@varname].clr_cell_fr or &_colors.black]];
+       // this.spc_x        = [[_G[@varname].spc_x or 10]];
+       // this.spc_y        = [[_G[@varname].spc_y or 10]];
+        //TODO: lay ser tabela lua
+        //TODO: "parse" lay p obter lay lins e cols 
+        this.lay          = lay;
+        this.lay_lins     = lay_lins;
+        this.lay_cols     = lay_cols;
+        this.uis_n        = uis_n;
+        //vem de UI
+ //       this.ren          = ren;
+    end;
+    var int opt;
+    every opt in grid.ok_uiclicked do
+        emit ok_uiclicked => opt;
+    end
+end
+//#endif

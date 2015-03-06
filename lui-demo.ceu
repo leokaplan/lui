@@ -1,0 +1,115 @@
+#ifndef _LUI_DEMO_CEU
+#define _LUI_DEMO_CEU
+#include "lui.ceu"
+#include "lui-quad.ceu"
+#include "lui-img.ceu"
+#include "lui-text.ceu"
+#include "c.ceu"
+
+#include "sdl.ceu"
+#include "sdl-gfx.ceu"
+
+
+class LUIDemo with
+    var char* varname;
+    var   _SDL_Renderer[] ren = null;
+    event void ok_clicked;
+do
+    var char[10] tipo =  [[ _G[@varname].tipo ]];
+    if not _strcmp("text",tipo) then
+        var LUIText ui with
+            this.ren = ren;
+            this.varname = varname;
+        end;
+    end
+    if not _strcmp("img",tipo) then
+        var LUIImg ui with
+            this.ren = ren;
+            this.varname = varname;
+        end;
+    end
+    if not _strcmp("quad",tipo) then
+        var LUIQuad ui with
+            this.ren = ren;
+            this.varname = varname;
+        end;
+        every ui.ok_clicked do
+            emit ok_clicked;
+        end
+    end 
+end
+
+
+#ifdef __LUI_DEMO_CEU
+LUI_load("lui-demo.lua");
+
+#include "c.ceu"
+#include "sdl-colors.ceu"
+input void SDL_QUIT;
+
+var int win_w;
+var int win_h;
+var _SDL_Window[] win;
+    finalize
+        win = _SDL_CreateWindow("LUI - DEMO",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+_SDL_GetWindowSize(win, &win_w, &win_h);
+var _SDL_Rect win_r;
+    win_r.x = 0;
+    win_r.y = 0;
+    win_r.w = win_w;
+    win_r.h = win_h;
+
+var _SDL_Renderer[] ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+par/or do
+    await SDL_QUIT;
+with
+    var LUIDemo a with
+        this.varname = "a";
+        this.ren = ren;
+    end;
+    var LUIDemo b with
+        this.varname = "b";
+        this.ren = ren;
+    end;
+    var LUIDemo c with
+        this.varname = "c";
+        this.ren = ren;
+    end;
+
+    var LUIDemo d with
+        this.varname = "b";
+        this.ren = ren;
+    end;
+    par/or do
+        every a.ok_clicked do
+            _printf("hi a\n");
+        end
+    with
+        every c.ok_clicked do
+            _printf("hi c\n");
+        end
+    end
+    /*
+    await FOREVER;
+    */
+with
+    every SDL_REDRAW do  
+       _SDL_RenderPresent(ren);
+    end
+end
+escape 0;
+
+#endif
+#endif
+

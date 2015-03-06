@@ -1,0 +1,110 @@
+#ifndef _LUI_NUMBER_CEU
+#define _LUI_NUMBER_CEU
+#include "lui.ceu"
+#include "c.ceu"
+
+class LUINumber with
+    var char* varname;
+    var int l = 0;
+do
+    var int variable;
+    variable =  [[ (type(_G[@varname])=="number" and _G[@varname]) or 0]];//0 é pessimo, mas é para indicar erro, por exemplo que a exp é nil
+    //variable = 10;
+    if not variable == 0 then
+        _printf("%d",variable);
+    else
+        _printf("erro");
+    end
+    
+    if l == 1 then
+        var int it = 0;
+        _printf("pass\n");
+        every 1s do
+            _printf("%d : %d\n",it,variable);
+            it = it + 1;
+        end
+        _printf("pass\n");
+    end
+end
+
+
+#ifdef __LUI_NUMBER_CEU
+LUI_load("lui-number.lua");
+#define eq(x) _printf(" = ");_printf(#x);_printf("\n");
+var LUINumber a with
+    this.varname = "a";
+end;
+eq(4)
+
+var LUINumber b with
+    this.varname = "b";
+end;
+eq(3)
+
+
+var char* v = "a"; 
+var LUINumber v1 with
+    this.varname = v;
+end;
+eq(4)
+
+var char[2] vl;
+_strcpy(vl,v);
+vl[0] = vl[0] + 1;
+var LUINumber v2 with
+    this.varname = vl;
+end;
+eq(3)
+
+
+var LUINumber bigname with
+    this.varname = "abc";
+end;
+eq(5)
+
+
+var char[] bv = "abc";
+var LUINumber bigname2 with
+    this.varname = bv;
+end;
+eq(5)
+
+var char[3] bv2;    
+_strcpy(bv2,bv);
+var LUINumber bigname3 with
+    this.varname = bv2;
+end;
+eq(5)
+
+var char[] bv3;
+
+finalize
+    bv3 = _malloc(3*sizeof(char));
+with
+    _free(bv3);
+end
+_strcpy(bv3,bv);
+var LUINumber bigname4 with
+    this.varname = bv3;
+end;
+eq(5)
+
+var LUINumber nan with
+    this.varname = "bla";
+end;
+eq(erro)
+
+
+var LUINumber nan2 with
+    this.varname = "d";
+end;
+eq(erro)
+var LUINumber lo with
+    this.varname = "a";
+    this.l = 1;
+end;
+await FOREVER;
+//escape 0;
+
+#endif
+#endif

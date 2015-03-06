@@ -1,0 +1,112 @@
+#ifndef _LUI_TABLE_CEU
+#define _LUI_TABLE_CEU
+#include "lui.ceu"
+#include "c.ceu"
+
+class LUITable with
+    var char* varname;
+do
+    var char[10] tipo =  [[ _G[@varname].tipo ]];
+    _printf("%s: ",tipo);
+    if not _strcmp("num",tipo) then
+        var int val =  [[ _G[@varname].val ]];
+        _printf("%d",val);
+        /*
+        var char[20] varnametemp = varname;
+        _strconcat(varnametemp,".val") 
+        var LUINumber val with
+            this.varname = varnametemp;
+        end;
+        */
+    end
+    if not _strcmp("string",tipo) then
+        var char[200] val =  [[ _G[@varname].val ]];
+        _printf("%s",val);
+    end
+    if not _strcmp("table",tipo) then
+        var int tam =  [[ _G[@varname].tam ]];
+        var int i = 1;
+        //pool LUITable[] vals;  
+        
+        //loop it in tam do
+        /*
+            spawn LUITable in vals with
+                this.varname = [[ @varname..@i ]];
+            end; 
+       */
+            var LUITable val with
+                this.varname = [[ @varname..@i ]];
+            end; 
+            i = i + 1;
+            printf("|");
+       // end
+    end
+end
+
+
+#ifdef __LUI_TABLE_CEU
+LUI_load("lui-table.lua");
+#define eq(x) _printf(" = ");_printf(#x);_printf("\n");
+
+var LUITable a with
+    this.varname = "a";
+end;
+eq(num: 4)
+
+var LUITable b with
+    this.varname = "b";
+end;
+eq(string: oi)
+
+
+var char* v = "a"; 
+var LUITable v1 with
+    this.varname = v;
+end;
+eq(num: 4)
+
+var char[2] vl;
+_strcpy(vl,v);
+vl[0] = vl[0] + 1;
+var LUITable v2 with
+    this.varname = vl;
+end;
+eq(string: oi)
+
+
+var LUITable bigname with
+    this.varname = "abc";
+end;
+eq(table: num: 4|string: oi|num: 2|)
+
+
+var char[] bv = "abc";
+var LUITable bigname2 with
+    this.varname = bv;
+end;
+eq(tchau)
+
+var char[3] bv2;    
+_strcpy(bv2,bv);
+var LUITable bigname3 with
+    this.varname = bv2;
+end;
+eq(tchau)
+
+var char[] bv3;
+
+finalize
+    bv3 = _malloc(3*sizeof(char));
+with
+    _free(bv3);
+end
+_strcpy(bv3,bv);
+var LUITable bigname4 with
+    this.varname = bv3;
+end;
+eq(tchau)
+
+escape 0;
+
+#endif
+#endif

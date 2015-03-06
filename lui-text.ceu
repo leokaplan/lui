@@ -1,0 +1,113 @@
+#ifndef _LUI_TEXT_CEU
+#define _LUI_TEXT_CEU
+#include "lui.ceu"
+#include "c.ceu"
+#include "ui-texture.ceu"
+#include "sdl.ceu"
+#include "sdl-gfx.ceu"
+
+input void SDL_REDRAW;
+input _SDL_MouseButtonEvent* SDL_MOUSEBUTTONUP;
+
+class LUIText with
+    var char* varname;
+    var   _SDL_Renderer[] ren       = null;
+do
+    var char[10] tipo =  [[ _G[@varname].tipo ]];
+    var int w,h;
+    var _SDL_Rect rect;
+    var _SDL_Texture[] tex;
+    if not _strcmp("text",tipo) then
+        _TTF_Init();
+        finalize 
+        with
+            _TTF_Quit();
+        end
+
+        var _TTF_Font[] font;
+        var int fontsize =  [[ _G[@varname].font_size or 20 ]];
+        //LUI_getstring(fontpath,_G[@varname].font, "Deutsch.ttf" ) 
+        var char[100] fontpath;
+        fontpath = [[ _G[@varname].font or "Deutsch.ttf" ]];
+        _printf("%s %d\n",fontpath,fontsize);
+        finalize
+            font = _TTF_OpenFont( fontpath ,fontsize);
+            //font = _TTF_OpenFont( "Deutsch.ttf" ,20);
+        with
+            _TTF_CloseFont(font);
+        end
+        _assert(font != null);
+        var char[200] text = [[ _G[@varname].text or "texto"  ]];
+        var char[10] fg_clr = [[ _G[@varname].fg_clr or "black"  ]];
+        var char[10] bg_clr = [[ _G[@varname].bg_clr or "white"  ]];
+        var _SDL_Color fg;
+        var _SDL_Color bg;
+        fg = _LUI_Color(fg_clr);
+        bg = _LUI_Color(bg_clr);
+        finalize
+           tex = _SDL_text2texture(ren,font,text,&fg,&bg);
+        with
+            _SDL_DestroyTexture(tex);
+        end
+    end
+    _SDL_QueryTexture(tex, null, null, &w, &h);
+    rect.w = w;
+    rect.h = h;
+    rect.x =  [[ _G[@varname].x or 0]];
+    rect.y =  [[ _G[@varname].y or 0]];
+    every SDL_REDRAW do
+            _SDL_RenderCopy(ren, tex, null, &rect);
+    end
+    
+end
+
+
+#ifdef __LUI_TEXT_CEU
+LUI_load("lui-text.lua");
+
+#include "c.ceu"
+#include "sdl-colors.ceu"
+
+input void SDL_QUIT;
+
+var int win_w;
+var int win_h;
+var _SDL_Window[] win;
+    finalize
+        win = _SDL_CreateWindow("LUI - TEXT",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+_SDL_GetWindowSize(win, &win_w, &win_h);
+var _SDL_Rect win_r;
+    win_r.x = 0;
+    win_r.y = 0;
+    win_r.w = win_w;
+    win_r.h = win_h;
+
+var _SDL_Renderer[] ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+par/or do
+    await SDL_QUIT;
+with
+    var LUIText a with
+        this.varname = "a";
+        this.ren = ren;
+    end;
+    await FOREVER;
+with
+    every SDL_REDRAW do  
+       _SDL_RenderPresent(ren);
+    end
+end
+escape 0;
+
+#endif
+#endif

@@ -1,0 +1,90 @@
+#ifndef _LUI_STRING_CEU
+#define _LUI_STRING_CEU
+#include "lui.ceu"
+#include "sdl.ceu"
+#include "sdl-colors.ceu"
+#include "c.ceu"
+
+class LUIString with
+    var char* varname;
+do
+    var char[200] variable =  [[ (type(_G[@varname]) == "string" and _G[@varname]) or "erro" ]];
+    _printf("%s",variable);
+end
+
+
+#ifdef __LUI_STRING_CEU
+LUI_load("lui-string.lua");
+#define eq(x) _printf(" = ");_printf(#x);_printf("\n");
+
+var LUIString a with
+    this.varname = "a";
+end;
+eq(oi)
+
+var LUIString b with
+    this.varname = "b";
+end;
+eq(bom dia)
+
+
+var char* v = "a"; 
+var LUIString v1 with
+    this.varname = v;
+end;
+eq(oi)
+
+var char[2] vl;
+_strcpy(vl,v);
+vl[0] = vl[0] + 1;
+var LUIString v2 with
+    this.varname = vl;
+end;
+eq(bom dia)
+
+
+var LUIString bigname with
+    this.varname = "abc";
+end;
+eq(tchau)
+
+
+var char[] bv = "abc";
+var LUIString bigname2 with
+    this.varname = bv;
+end;
+eq(tchau)
+
+var char[3] bv2;    
+_strcpy(bv2,bv);
+var LUIString bigname3 with
+    this.varname = bv2;
+end;
+eq(tchau)
+
+var char[] bv3;
+
+finalize
+    bv3 = _malloc(3*sizeof(char));
+with
+    _free(bv3);
+end
+_strcpy(bv3,bv);
+var LUIString bigname4 with
+    this.varname = bv3;
+end;
+eq(tchau)
+
+var LUIString err with
+    this.varname = "bla";
+end;
+eq(erro)
+
+var LUIString err2 with
+    this.varname = "d";
+end;     
+eq(erro)
+escape 0;
+
+#endif
+#endif

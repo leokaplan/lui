@@ -1,0 +1,61 @@
+
+#ifndef _LUI
+#define _LUI
+    native do
+        ##include<stdlib.h>
+    end
+/*
+    
+    //    x = nome da variavel no ceu
+    //    y = nome da variavel no lua
+    //    z = nome do default no lua
+    
+    #define LUI_getstring(x,y,z) \
+            var char* x = _malloc([[strlen(y)]]); \
+            finalize \
+            with \
+                _free(x); \
+            end \
+            _strcpy(x,[[y or z]]); 
+*/
+    #define LUI_load(x); [[ dofile x ]]
+#include "ui.ceu"
+#include "sdl-colors.ceu"
+    native do 
+        int LUI_Valign(char* align){
+            if(!strcmp(align,"top"))
+                return UI_ALIGN_TOP;
+            if(!strcmp(align,"bottom"))
+                return UI_ALIGN_BOTTOM;
+            if(!strcmp(align,"middle"))
+                return UI_ALIGN_MIDDLE;
+            //return error;
+        }
+        int LUI_Halign(char* align){
+            if(!strcmp(align,"left"))
+                return UI_ALIGN_LEFT;
+            if(!strcmp(align,"right"))
+                return UI_ALIGN_RIGHT;
+            if(!strcmp(align,"center"))
+                return UI_ALIGN_CENTER;
+            //return error;
+        }
+        #define ret(x) if(!strcmp(color,#x)) return colors.x;
+        SDL_Color LUI_Color(char* color){
+            ret(black);
+            ret(white);
+            ret(blue);
+            ret(red);
+            ret(green);
+            ret(light_blue);
+            ret(dark_blue);
+            ret(yellow);
+            ret(gray);
+            ret(light_gray);
+            ret(gray_50);
+            ret(gray_75);
+            ret(brown);
+        }
+    end
+    native @nohold _LUI_Color();
+#endif

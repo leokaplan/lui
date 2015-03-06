@@ -1,0 +1,88 @@
+#ifndef _LUI_IMG_CEU
+#define _LUI_IMG_CEU
+#include "lui.ceu"
+#include "c.ceu"
+
+#include "sdl.ceu"
+#include "sdl-gfx.ceu"
+
+input void SDL_REDRAW;
+input _SDL_MouseButtonEvent* SDL_MOUSEBUTTONUP;
+
+class LUIImg with
+    var char* varname;
+    var   _SDL_Renderer[] ren       = null;
+do
+    var char[10] tipo =  [[ _G[@varname].tipo ]];
+    var int w,h;
+    var _SDL_Rect rect;
+    var _SDL_Texture[] tex;
+    if not _strcmp("img",tipo) then
+        var char[200] path =  [[ _G[@varname].src ]];
+        finalize
+            tex = _IMG_LoadTexture(ren,path);
+        with
+            _SDL_DestroyTexture(tex);
+        end
+    end
+    _SDL_QueryTexture(tex, null, null, &w, &h);
+    rect.w = w;
+    rect.h = h;
+    rect.x =  [[ _G[@varname].x or 0]];
+    rect.y =  [[ _G[@varname].y or 0]];
+    every SDL_REDRAW do
+            _SDL_RenderCopy(ren, tex, null, &rect);
+    end
+    
+end
+
+
+#ifdef __LUI_IMG_CEU
+LUI_load("lui-img.lua");
+
+#include "c.ceu"
+#include "sdl-colors.ceu"
+
+input void SDL_QUIT;
+
+var int win_w;
+var int win_h;
+var _SDL_Window[] win;
+    finalize
+        win = _SDL_CreateWindow("LUI - IMG",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+_SDL_GetWindowSize(win, &win_w, &win_h);
+var _SDL_Rect win_r;
+    win_r.x = 0;
+    win_r.y = 0;
+    win_r.w = win_w;
+    win_r.h = win_h;
+
+var _SDL_Renderer[] ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+par/or do
+    await SDL_QUIT;
+with
+    var LUIImg a with
+        this.varname = "a";
+        this.ren = ren;
+    end;
+    await FOREVER;
+with
+    every SDL_REDRAW do  
+       _SDL_RenderPresent(ren);
+    end
+end
+escape 0;
+
+#endif
+#endif

@@ -1,0 +1,40 @@
+[[
+    dofile 'abc.lua'
+    -- panel1 = { label='mypanel', w=500 }
+]]
+
+var int w = [[ panel.w ]];
+var char[50] orig;
+var char* str = orig;
+str = [[ panel.label ]];
+
+var int len = [[ string.len(panel.label) ]];
+finalize
+    str = _malloc(len);
+with
+    _free(str);
+end
+/*
+[[
+    dofile 'arq.lua'
+]]
+*/
+load("arq.lua");
+var Panel p;
+with
+ this.varname = "panel1";
+end;
+
+class LUIPanel with
+ var char* varname;
+ var UIPanel& orig;
+do
+    w = [[_G[@varname].w or 100]];
+    var UIPanel uip with
+        this.w = w;
+        ...
+    end;
+    this.orig = uip;
+end    
+
+await p.ifc.clicked;

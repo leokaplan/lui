@@ -1,0 +1,123 @@
+#ifndef _LUI_QUAD_CEU
+#define _LUI_QUAD_CEU
+#include "lui.ceu"
+#include "c.ceu"
+
+#include "sdl.ceu"
+#include "sdl-gfx.ceu"
+
+input void SDL_REDRAW;
+input _SDL_MouseButtonEvent* SDL_MOUSEBUTTONUP;
+
+class LUIQuad with
+    var char* varname;
+    var   _SDL_Renderer[] ren = null;
+    event void ok_clicked;
+do
+    var char[10] tipo =  [[ _G[@varname].tipo ]];
+    var int w,h;
+    var _SDL_Rect rect;
+    var _SDL_Texture[] tex;
+    if not _strcmp("quad",tipo) then
+        rect.w =  [[ _G[@varname].w or 10 ]];
+        rect.h =  [[ _G[@varname].h or 10 ]];
+        rect.x =  [[ _G[@varname].x or 0]];
+        rect.y =  [[ _G[@varname].y or 0]];
+        var char[10] clr;
+        clr = [[ _G[@varname].clr or "white" ]];
+        var _SDL_Color lc;
+        var _SDL_Color ac;
+        /*
+        finalize
+            ac = _LUI_Color(clr);
+        with
+            nothing;
+        end
+        */
+        ac = _LUI_Color(clr);
+        par do
+            loop do
+                var _SDL_MouseButtonEvent* but = await SDL_MOUSEBUTTONUP;
+                if _SDL_Rect_vs_Mouse(&rect, but) then
+                    emit ok_clicked;
+                end
+            end
+        with
+            every SDL_REDRAW do
+                /*          
+                finalize
+                    _SDL_GetRenderDrawColor(ren,&lc.r,&lc.g,&lc.b,&lc.a);
+                with
+                    nothing;
+                end
+                */
+                _SDL_SetRenderDrawColor(ren, ac.r, ac.g, ac.b,0xff);
+                _SDL_RenderFillRect(ren, &rect);
+                //_SDL_SetRenderDrawColor(ren,lc.r,lc.g,lc.b,0xff);
+            end
+        end
+   end 
+end
+
+
+#ifdef __LUI_QUAD_CEU
+LUI_load("lui-quad.lua");
+
+#include "c.ceu"
+#include "sdl-colors.ceu"
+
+input void SDL_QUIT;
+
+var int win_w;
+var int win_h;
+var _SDL_Window[] win;
+    finalize
+        win = _SDL_CreateWindow("LUI - QUAD",
+                            500, 1300, 800, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+
+_SDL_GetWindowSize(win, &win_w, &win_h);
+var _SDL_Rect win_r;
+    win_r.x = 0;
+    win_r.y = 0;
+    win_r.w = win_w;
+    win_r.h = win_h;
+
+var _SDL_Renderer[] ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+
+par/or do
+    await SDL_QUIT;
+with
+    var LUIQuad a with
+        this.varname = "a";
+        this.ren = ren;
+    end;
+    var LUIQuad b with
+        this.varname = "c";
+        this.ren = ren;
+    end;
+    par do
+        every a.ok_clicked do
+            _printf("hi a\n");
+        end
+    with
+        every b.ok_clicked do
+            _printf("hi b\n");
+        end
+    end
+with
+    every SDL_REDRAW do  
+       _SDL_RenderPresent(ren);
+    end
+end
+escape 0;
+
+#endif
+#endif

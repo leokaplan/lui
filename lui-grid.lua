@@ -1,0 +1,9 @@
+g1 = {}
+g1.clr_bg       = "gray";
+g1.clr_fr       = "blue";
+g1.clr_cell_bg  = "white";
+g1.clr_cell_fr  = "black";
+g1.spc_x        = 10;
+g1.spc_y        = 10;
+--g1.lay          = {{},{},{},{}}
+a = 4;
